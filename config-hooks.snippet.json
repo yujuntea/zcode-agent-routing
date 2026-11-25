@@ -1,0 +1,64 @@
+{
+  "hooks": {
+    "enabled": true,
+    "events": {
+      "SessionStart": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "python3 ~/.zcode/agents/heal_frontmatter.py",
+              "timeout": 10,
+              "statusMessage": "检查子智能体 frontmatter"
+            }
+          ]
+        }
+      ],
+      "PreToolUse": [
+        {
+          "matcher": "^(Agent|Task|SendMessage)$",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "python3 ~/.zcode/agents/review_role_rotation.py pre",
+              "timeout": 5,
+              "statusMessage": "第一审双模型轮换"
+            },
+            {
+              "type": "command",
+              "command": "python3 ~/.zcode/agents/review_dispatch_guard.py pre",
+              "timeout": 5,
+              "statusMessage": "审查派发进场校验"
+            }
+          ]
+        }
+      ],
+      "PostToolUse": [
+        {
+          "matcher": "^(Agent|Task|SendMessage)$",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "python3 ~/.zcode/agents/review_dispatch_guard.py post",
+              "timeout": 5,
+              "statusMessage": "审查派发登记"
+            }
+          ]
+        }
+      ],
+      "PostToolUseFailure": [
+        {
+          "matcher": "^(Agent|Task|SendMessage)$",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "python3 ~/.zcode/agents/review_dispatch_guard.py post",
+              "timeout": 5,
+              "statusMessage": "审查派发登记"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
