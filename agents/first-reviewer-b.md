@@ -2,6 +2,7 @@
 name: "first-reviewer-b"
 description: "独立第一审 · 双模型轮换对成员 B。职责与成员 A 相同,模型与 A 异构——同一开发任务里由轮换 hook 自动交替,让任务获得两个模型的独立视角。选一个和产出方不同家族的模型,审查结论才不会和产出方共享同一套盲区。"
 color: cyan
+# model 必须换成你自己的 provider 标识(见 README「怎么查自己的模型标识」);占位值无法解析模型
 model: "<your-provider>/deepseek-v4.1-flash"
 thoughtLevel: max
 tools:

@@ -106,7 +106,7 @@ member for that one dispatch (don't put it in your task-book template).
 The dispatch `prompt` or `description` must contain one of:
 
 - a line starting with **`〔下一跳`** (most common);
-- a line starting with **`〔状态`** (real task books often put status before next-hop);
+- a line starting with **`〔状态`** or **`〔本轮状态`** (real task books often put status before next-hop);
 - a line starting with **`首审`** or **`状态：`** (first stage in a chain, declare it honestly).
 
 Allowed prefixes: `>`, `-`, `#`, backticks, `**`, and a single **ASCII role label**
@@ -119,6 +119,11 @@ and the gate exists to catch template reuse, so being fooled by a template defea
 The tightening was A/B-tested on **889 real task books**; it also had to accept `〔状态`-leading lines,
 backtick-wrapped lines, `> ##` blockquote headings, `（逐字）`-style heading suffixes, and content
 after an unclosed code fence. Final result: **zero regression** on real task books.
+
+**The inline-prompt path is slightly looser: the marker only has to appear somewhere in the prompt**,
+not at line start. That is deliberate — inline text is written at dispatch time, while task books are
+copied around and accumulate stale templates, so the tightening targets task books. Do not treat the
+gate as an intent checker; it only guarantees that *something* is there.
 
 When the prompt only carries a task-book path, the gate reads that task book, finds the
 "previous report status line" heading (blockquote / `#` / `**` / `（必填）` / `（逐字）` all tolerated),

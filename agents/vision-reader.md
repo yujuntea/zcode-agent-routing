@@ -2,6 +2,7 @@
 name: "vision-reader"
 description: "图片/视频判读员。承接主 Agent 不便直读的批量视觉任务:多图批量/比对、判读结果很长需上下文隔离、视频/录屏判读。输入本地图片或视频路径列表,返回结构化视觉描述:UI 元素与状态、页面比对差异、报错截图的文字转写、执行录屏关键动作序列。可多开并行。"
 color: purple
+# model 必须换成你自己的 provider 标识(见 README「怎么查自己的模型标识」);占位值无法解析模型
 model: "<your-provider>/MiniMax-M3.1-Flash"
 thoughtLevel: max
 tools:

@@ -5,6 +5,7 @@ color: blue
 # ↓ 执行岗按需换人:改这一行即可,别在提示词里解释。
 #   常用两个:GLM-5.3-Flash(额度宽,适合纯写码跑命令)
 #            MiniMax-M3.1-Flash(同样快且能读图看视频,适合带截图取证的任务)
+# model 必须换成你自己的 provider 标识(见 README「怎么查自己的模型标识」);占位值无法解析模型
 model: "<your-provider>/GLM-5.3-Flash"
 thoughtLevel: max
 tools:

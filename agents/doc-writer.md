@@ -2,6 +2,7 @@
 name: "doc-writer"
 description: "中文文档撰写员。方案文档成稿、用例文案润色、公众号/汇报材料写作、release note。中文生成质量优先,方案设计/审查类任务仍归审查角色。兼做视觉二意见(带 image 输入)。"
 color: orange
+# model 必须换成你自己的 provider 标识(见 README「怎么查自己的模型标识」);占位值无法解析模型
 model: "<your-provider>/MiniMax-M3.1-Flash"
 thoughtLevel: max
 tools:

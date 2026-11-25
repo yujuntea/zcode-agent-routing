@@ -2,6 +2,7 @@
 name: "first-reviewer-a"
 description: "独立第一审 · 双模型轮换对成员 A。审方案/大 diff/测试报告,输出分级问题清单(P0 阻塞/P1 真实风险/P2 建议与极端场景)。轻中量级产物审完即终审;重量级产物审完修复后交终审角色做异构终审。与 first-reviewer-b 组成轮换对,由轮换 hook 自动交替,让同一任务获得两个模型的独立视角。独立冷启动上下文,没有写作记忆的合理化偏袒。"
 color: cyan
+# model 必须换成你自己的 provider 标识(见 README「怎么查自己的模型标识」);占位值无法解析模型
 model: "<your-provider>/GLM-5.4"
 thoughtLevel: max
 tools:

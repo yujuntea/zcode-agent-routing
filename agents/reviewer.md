@@ -2,6 +2,7 @@
 name: "reviewer"
 description: "异构终审。对重量级产物(方案级/大 diff/进 repo/交付他人/定稿)做最后一轮独立终审——与一审和产出方都不同源的模型,专门负责第一审与产出方共享的同源盲区。输出分级问题清单(P0 阻塞/P1 真实风险/P2 建议与极端场景)。第一审修完所有 P0/P1 后才派这里。"
 color: red
+# model 必须换成你自己的 provider 标识(见 README「怎么查自己的模型标识」);占位值无法解析模型
 model: "<your-provider>/k3.1-pro"
 thoughtLevel: max
 tools:
