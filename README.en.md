@@ -103,31 +103,43 @@ member for that one dispatch (don't put it in your task-book template).
 
 ### What the gate accepts as evidence
 
-The dispatch `prompt` or `description` must contain one of:
+When dispatching a review role, the `prompt` / `description` must carry entry evidence. The evidence
+can be **written inline in the prompt** or you can **give only a task-book path** and let the gate read
+it — **the two paths have different widths**:
 
-- a line starting with **`〔下一跳`** (most common);
-- a line starting with **`〔状态`** or **`〔本轮状态`** (real task books often put status before next-hop);
-- a line starting with **`首审`** or **`状态：`** (first stage in a chain, declare it honestly).
+**Inline in `prompt` / `description` (narrow — only two forms)**
+
+- a line **containing** **`〔下一跳`** (inline uses a "contains" test);
+- a line **starting with** **`首审`** (first stage in a chain, declare it honestly).
+
+`〔状态` / `〔本轮状态` / `状态：` are **not** accepted inline — a prompt usually mixes in explanatory
+prose, see "Why the two differ" below. If rejected, the stderr hint tells you to add `〔下一跳` or
+`首审`.
+
+**Task-book path only (wide)** — the gate reads the task book, finds the
+"previous report status line" heading (blockquote / `#` / `**` / `（必填）` / `（逐字）` all tolerated),
+and the declaration line that follows must **start with** one of:
+
+- `〔下一跳` (most common);
+- `〔状态` or `〔本轮状态` (real task books often put status before next-hop);
+- `状态：`;
+- `首审` (first stage in a chain, declare it honestly).
 
 Allowed prefixes: `>`, `-`, `#`, backticks, `**`, and a single **ASCII role label**
 (e.g. `K3：〔下一跳…〕`, `glm：首审…`). Chinese prose does not count — so
 "here is a checklist: 〔下一跳…〕" cannot sneak through.
 
-**The rule is "starts with", not "contains".** This was calibrated against real task books:
-with a "contains" rule, a format illustration such as `状态行格式是〔下一跳:X〕` satisfied the gate —
-and the gate exists to catch template reuse, so being fooled by a template defeats its purpose.
-The tightening was A/B-tested on **889 real task books**; it also had to accept `〔状态`-leading lines,
-backtick-wrapped lines, `> ##` blockquote headings, `（逐字）`-style heading suffixes, and content
-after an unclosed code fence. Final result: **zero regression** on real task books.
+**On the task-book path the rule is "starts with", not "contains".** This was calibrated against real
+task books: with a "contains" rule, a format illustration such as `状态行格式是〔下一跳:X}` satisfied
+the gate — and the gate exists to catch template reuse, so being fooled by a template defeats its
+purpose. The tightening was A/B-tested on **889 real task books**; it also had to accept
+`〔状态`-leading lines, backtick-wrapped lines, `> ##` blockquote headings, `（逐字）`-style heading
+suffixes, and content after an unclosed code fence. Final result: **zero regression**.
 
-**The inline-prompt path is slightly looser: the marker only has to appear somewhere in the prompt**,
-not at line start. That is deliberate — inline text is written at dispatch time, while task books are
-copied around and accumulate stale templates, so the tightening targets task books. Do not treat the
-gate as an intent checker; it only guarantees that *something* is there.
-
-When the prompt only carries a task-book path, the gate reads that task book, finds the
-"previous report status line" heading (blockquote / `#` / `**` / `（必填）` / `（逐字）` all tolerated),
-and validates the declaration line that follows.
+**Why the two differ**: task books are copied around and accumulate stale templates, so that path is
+pinned to "starts with"; inline text is written at dispatch time, but a prompt can still contain an
+illustration like `状态行格式是〔下一跳:X〕`, so only the two least abusable forms are accepted there.
+Do not treat the gate as an intent checker; it only guarantees that *something* is there.
 
 ---
 
