@@ -130,16 +130,18 @@ Allowed prefixes: `>`, `-`, `#`, backticks, `**`, and a single **ASCII role labe
 "here is a checklist: 〔下一跳…〕" cannot sneak through.
 
 **On the task-book path the rule is "starts with", not "contains".** This was calibrated against real
-task books: with a "contains" rule, a format illustration such as `状态行格式是〔下一跳:X}` satisfied
+task books: with a "contains" rule, a format illustration such as `状态行格式是〔下一跳:X〕` satisfied
 the gate — and the gate exists to catch template reuse, so being fooled by a template defeats its
 purpose. The tightening was A/B-tested on **889 real task books**; it also had to accept
 `〔状态`-leading lines, backtick-wrapped lines, `> ##` blockquote headings, `（逐字）`-style heading
 suffixes, and content after an unclosed code fence. Final result: **zero regression**.
 
-**Why the two differ**: task books are copied around and accumulate stale templates, so that path is
-pinned to "starts with"; inline text is written at dispatch time, but a prompt can still contain an
-illustration like `状态行格式是〔下一跳:X〕`, so only the two least abusable forms are accepted there.
-Do not treat the gate as an intent checker; it only guarantees that *something* is there.
+**Why the two differ**: the position test is actually **reversed** — only the task-book path has a fixed
+heading anchor and can be pinned to "starts with"; an inline prompt has no anchor, so `〔下一跳` is tested
+as "appears somewhere", and the three markers that cannot be controlled that way are simply not accepted
+inline. **The cost is known: an inline prompt saying `状态行格式是〔下一跳:X〕` will also pass** — the same
+"existence, not semantics" contract as above. Do not treat the gate as an intent checker; it only
+guarantees that *something* is there.
 
 ---
 
