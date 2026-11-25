@@ -70,14 +70,29 @@ def main():
 
     print("\n[4] 轮换 hook:REVIEW-ROLE-FIXED 固定成员")
     rr2 = {"RR_STATE": os.path.join(TMP, "rr2.json"), "RR_LOG": os.path.join(TMP, "rr2.log")}
+    # 先让状态记下"上次=某个成员",再用固定标记请求另一个成员。
     run("review_role_rotation.py", ["pre"], dispatch("first-reviewer-a"), rr2)
+    fixed_role = "first-reviewer-b"
     code, out, _ = run("review_role_rotation.py", ["pre"],
-                       dispatch("first-reviewer-b", prompt="REVIEW-ROLE-FIXED", run_in_background=False), rr2)
-    check("固定标记时不改写角色(无输出)", out.strip() == "", out.strip()[:80])
+                       dispatch(fixed_role, prompt="REVIEW-ROLE-FIXED", run_in_background=False), rr2)
+    # 不能只断言"没输出"——hook 崩了也会没输出。要验状态确实被写成请求的成员。
+    st = json.load(open(rr2["RR_STATE"], encoding="utf-8"))
+    last = (st.get("sessions", {}).get("s1") or {}).get("last")
+    check("固定标记时改写成请求的成员", out.strip() == "" and last == fixed_role,
+          f"out={out.strip()[:40]!r} last={last}")
+    # 紧接着一次普通派发应当从固定成员翻到另一个,证明状态机没被固定标记卡住。
+    code, out, _ = run("review_role_rotation.py", ["pre"],
+                       dispatch(fixed_role, run_in_background=False), rr2)
+    flipped = json.loads(out)["hookSpecificOutput"]["updatedInput"]["subagent_type"] if out.strip() else None
+    check("固定标记后的普通派发仍继续轮换", flipped == "first-reviewer-a", f"实际 {flipped}")
 
     print("\n[5] 轮换 hook:非审查角色零影响")
+    before = open(rr["RR_STATE"], encoding="utf-8").read()
     code, out, _ = run("review_role_rotation.py", ["pre"], dispatch("impl-worker"), rr)
-    check("impl-worker 派发不被改写", out.strip() == "", out.strip()[:80])
+    after = open(rr["RR_STATE"], encoding="utf-8").read()
+    # 同样不能只看"没输出":要确认状态文件一个字节都没动(说明 hook 根本没介入)。
+    check("impl-worker 派发不被改写且不动轮换状态", out.strip() == "" and before == after,
+          f"out={out.strip()[:40]!r} state_changed={before != after}")
 
     print("\n[6] 两个 hook:异常输入一律放行(fail-open)")
     env = dict(rr); env.update(gd)
@@ -115,9 +130,25 @@ def main():
         ("taskbook-firstreview.md", "首审（链中第一环，无上一状态行）。", 0, "首审声明"),
         ("taskbook-template.md", "这里写一个检查清单：〔下一跳…〕", 2, "模板占位/清单句"),
         ("taskbook-mention.md", "状态行格式是〔下一跳:X(之后→Y;闭案条件=Z)〕", 2, "仅提及格式"),
+        ("taskbook-label.md", "K3：〔下一跳:glm delta 复核(…;闭案条件=0P0)〕", 0, "角色标签前缀(K3：)"),
     ]
     for fname, decl, expect, label in cases:
         path = write_tb(fname, decl)
+        code, _, _ = run("review_dispatch_guard.py", ["pre"],
+                         dispatch("first-reviewer-a", prompt=f"任务书：{path}"), gd)
+        check(f"{label} → {'放行' if expect == 0 else '拒绝'}", code == expect, f"实际退出码 {code}")
+
+    # 标题写法与代码块边界(真实任务书里都出现过)
+    raw = {
+        "taskbook-quote-heading.md": ("> ## 上一份报告状态行原文\n> 〔下一跳:修复审(A 通道)〕\n", 0, "引用块标题"),
+        "taskbook-heading-note.md": ("**上一份报告状态行原文（逐字）**：〔下一跳：闭案（零问题）〕\n", 0, "标题带（逐字）后缀"),
+        "taskbook-unclosed-fence.md": ("```\ncode\n\n## 上一份报告状态行原文\n〔下一跳:修复审(…;闭案条件=0P0)〕\n", 0, "未闭合代码块"),
+        "taskbook-fenced-template.md": ("```\n## 上一份报告状态行原文\n〔下一跳:示例〕\n```\n\n## 审查任务\n审。\n", 2, "成对代码块内的模板"),
+    }
+    for fname, (body, expect, label) in raw.items():
+        path = os.path.join(tb_dir, fname)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("# 审查任务书\n\n" + body)
         code, _, _ = run("review_dispatch_guard.py", ["pre"],
                          dispatch("first-reviewer-a", prompt=f"任务书：{path}"), gd)
         check(f"{label} → {'放行' if expect == 0 else '拒绝'}", code == expect, f"实际退出码 {code}")

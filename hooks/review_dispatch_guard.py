@@ -45,7 +45,9 @@ REG_ROLES = ROLES + ('impl-worker', 'doc-writer', 'vision-reader')
 REG_MAX = 1000
 
 _TASKBOOK_RE = re.compile(r'(?:~|/)[^\s"\'`()<>，。；、：]+?\.md')
-_TASKBOOK_HEADING_RE = re.compile(r'^[ \t]*(?:#{1,4}[ \t]*)?\**[ \t]*上一份报告状态行原文')
+# 标题可带引用块(>)、#/**、列表前缀——真实任务书里有 84 份用 `> ## 上一份…` 形态
+_TASKBOOK_HEADING_RE = re.compile(r'^[ \t]*(?:>[ \t]*)*(?:#{1,4}[ \t]*)?\**[ \t]*上一份报告状态行原文'
+                                  r'(?:[（(][^）)]{0,12}[）)])?')
 _TASKBOOK_MAX_FILES = 8
 _TASKBOOK_MAX_BYTES = 400 * 1024
 
@@ -136,13 +138,18 @@ def _taskbook_paths(*texts):
     return out[:_TASKBOOK_MAX_FILES]
 
 
+# 允许「K3：〔下一跳…」「glm：首审…」这类带角色标签的写法;
+# 只认 ASCII 标签——中文散文(如「这里写一个检查清单：」)不算,避免模板句蒙混。
+_LABEL_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_.\-]{0,15}\s*[：:]\s*')
+
+
 def _declaration_line(s):
     """任务书里的声明行:去掉列表/引用/标题/反引号前缀后,必须以声明标记**开头**。
 
     只"包含"标记不算——否则一行「状态行格式是〔下一跳:X〕」的示例句就能骗过闸门。
     认的合法开头(按真实任务书统计):首审 / 状态：/ 〔下一跳 / 〔状态 / 〔本轮状态。
     """
-    s = _strip_prefix(s)
+    s = _LABEL_RE.sub('', _strip_prefix(s))
     return re.match(r'^(?:首审|状态[：:]|〔(?:下一跳|状态|本轮状态))', s) is not None
 
 
@@ -156,12 +163,19 @@ def _taskbook_has_basis(path):
             lines = f.read(_TASKBOOK_MAX_BYTES).splitlines()
     except Exception:
         return False
-    fenced = False
+    # 只跳过**成对闭合**的代码块:未闭合的开头按普通文本处理,
+    # 否则任务书里漏写一个收尾 ``` 就会让后面所有声明行都看不见。
+    fenced = set()
+    open_idx = None
     for i, line in enumerate(lines):
         if line.lstrip().startswith(('```', '~~~')):
-            fenced = not fenced
-            continue
-        if fenced:
+            if open_idx is None:
+                open_idx = i
+            else:
+                fenced.update(range(open_idx, i + 1))
+                open_idx = None
+    for i, line in enumerate(lines):
+        if i in fenced:
             continue
         m = _TASKBOOK_HEADING_RE.match(line)
         if not m:
