@@ -191,7 +191,7 @@ python3 test/smoke.py
 ```
 
 It covers rotation alternation, the fixed-member marker, explicit foreground not being overridden,
-zero impact on non-review roles, fail-open behavior, gate reject/allow, eleven evidence formats (nine real-world variants plus two
+zero impact on non-review roles, fail-open behavior, gate reject/allow, eleven evidence formats (eight real-world variants plus three
 template traps that must stay rejected), registry writes, and heal idempotency.
 **All 30 checks must pass.**
 
