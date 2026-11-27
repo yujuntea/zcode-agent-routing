@@ -145,7 +145,7 @@ guarantees that *something* is there.
 
 ---
 
-## Four hard rules
+## Five hard rules
 
 **① Model routing is config, not prompt.**
 Switching models = editing the `model:` field in the role file. Writing "you are model X" in the
@@ -161,8 +161,21 @@ intermediate process floods back into the main session and its context fills up 
 
 **④ Review reports end with a status line.**
 Format: `〔下一跳:<next action>(之后→<follow-up>;闭案条件=<close condition>)〕`.
-The first hop is the next role + stage that must be dispatched. It doubles as the
-"entry evidence" the gate looks for.
+The first hop is the next role + stage that must be dispatched (a user decision when the
+plan direction is disputed). It doubles as the "entry evidence" the gate looks for.
+
+**⑤ Review the plan before reviewing the details.**
+The report opens by restating the goal and real scenarios, then judges
+`holds / holds but a better path exists / direction is wrong`.
+For the latter two, give ≤2 candidates (constraints preserved / real-scenario gain /
+failure mode / migration cost), or name the closest alternative and why it was rejected.
+"Direction is wrong" is graded P0/P1 with the four items, and the status line's first hop
+is a user decision. "Better but optional" is P2 and does not block closure; a structural
+change is parked for a user decision (no first hop) and must be surfaced to the user explicitly.
+Code diffs / B-channel spec conformance / test reports write `n/a` (except a large change with
+no upstream plan review).
+Why: if you read the issue list first, attention is already anchored to the original plan;
+without a fixed slot, "think holistically" will be skipped.
 
 ---
 
