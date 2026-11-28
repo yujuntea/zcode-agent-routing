@@ -57,7 +57,7 @@ Lay out every layer against "is it the same origin as the main session?" and the
 | Layer | Relation to the main session |
 |---|---|
 | Execution | different origin |
-| First review | **one of the two members is always the same family as the main session** (if the main session runs DeepSeek, member B is DeepSeek too) |
+| First review | **one of the two members is usually the same family as the main session** (if the main session runs DeepSeek, member B may also be DeepSeek) |
 | Final review | **different from everything upstream** — no matter which model the main session switched to |
 
 So:
@@ -126,7 +126,7 @@ and the declaration line that follows must **start with** one of:
 - `首审` (first stage in a chain, declare it honestly).
 
 Allowed prefixes: `>`, `-`, `#`, backticks, `**`, and a single **ASCII role label**
-(e.g. `K3：〔下一跳…〕`, `glm：首审…`). Chinese prose does not count — so
+(e.g. `reviewer：〔下一跳…〕`, `glm：首审…`). Chinese prose does not count — so
 "here is a checklist: 〔下一跳…〕" cannot sneak through.
 
 **On the task-book path the rule is "starts with", not "contains".** This was calibrated against real
@@ -172,8 +172,8 @@ failure mode / migration cost), or name the closest alternative and why it was r
 "Direction is wrong" is graded P0/P1 with the four items, and the status line's first hop
 is a user decision. "Better but optional" is P2 and does not block closure; a structural
 change is parked for a user decision (no first hop) and must be surfaced to the user explicitly.
-Code diffs / B-channel spec conformance / test reports write `n/a` (except a large change with
-no upstream plan review).
+Code diffs, B-channel spec conformance, and test reports write `n/a`; **only a large code change
+with no upstream plan review is the exception** and still needs an overall judgment.
 Why: if you read the issue list first, attention is already anchored to the original plan;
 without a fixed slot, "think holistically" will be skipped.
 
@@ -193,11 +193,26 @@ list it separately for a human decision instead of silently dropping it.
 
 ---
 
+## The main session needs rules too
+
+Roles and hooks answer "who reviews". They do not tell the main session **when to dispatch and in what order**.
+
+- [`AGENTS.md`](AGENTS.md): a sample dispatch agreement for the main session; edit it for your model pool, then merge it into your `~/.zcode/AGENTS.md` (if the target already has one, merge rather than overwrite).
+- [`docs/three-stage-review.md`](docs/three-stage-review.md): the full three-stage protocol — L0, channels, taskbooks, report contract, status line, fix closure. (Chinese only.)
+
+ZCode merges `~/.zcode/AGENTS.md` with the project-root `AGENTS.md`. In this repo, the root file is a sample, not your project's rules; merge it into your own global file or your working project's root. It takes effect in a new session.
+
+Without these two layers, a full set of roles still degrades into "let's skip review this time".
+
+---
+
 ## Install
 
-Full steps in **[install.md](install.md)**. Shortest path:
+Full steps: **[install.md](install.md)**. Shortest path:
 
 ```bash
+# 0. Main-session agreement: merge AGENTS.md into ~/.zcode/AGENTS.md, then reopen a session
+
 # 1. roles
 mkdir -p ~/.zcode/agents
 cp agents/first-reviewer-a.md agents/first-reviewer-b.md ~/.zcode/agents/
@@ -212,7 +227,8 @@ tail -5 ~/.zcode/agents/.review-rotation.log
 ```
 
 Role definition changes take effect in a **new session** (the engine re-reads role config at the
-start of every turn).
+start of every turn). The AGENTS.md merge also takes effect in a new session; verify it in your
+actual working project directory — in this clone, the repo's sample will answer too.
 
 ### Self-test
 
@@ -279,7 +295,9 @@ Field shapes vary across versions; if this yields nothing, use the panel route.
 zcode-agent-routing/
 ├── README.md                    Chinese README（中文版）
 ├── README.en.md                 you are here
+├── AGENTS.md                    main-session dispatch agreement (merge into ~/.zcode/AGENTS.md)
 ├── install.md                   step-by-step install with a verification per step
+├── docs/three-stage-review.md   full three-stage review protocol (Chinese)
 ├── config-hooks.snippet.json    hooks fragment to merge into ~/.zcode/cli/config.json
 ├── agents/                      6 role definitions
 ├── hooks/                       3 hook scripts

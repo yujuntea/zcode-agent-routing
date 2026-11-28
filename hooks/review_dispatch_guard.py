@@ -148,7 +148,7 @@ def _taskbook_paths(*texts):
     return out[:_TASKBOOK_MAX_FILES]
 
 
-# 允许「K3：〔下一跳…」「glm：首审…」这类带角色标签的写法;
+# 允许「reviewer：〔下一跳…」「glm：首审…」这类带角色标签的写法;
 # 只认 ASCII 标签——中文散文(如「这里写一个检查清单：」)不算,避免模板句蒙混。
 _LABEL_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_.\-]{0,15}\s*[：:]\s*')
 

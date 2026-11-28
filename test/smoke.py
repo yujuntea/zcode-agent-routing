@@ -111,7 +111,7 @@ def main():
     print("\n[8] 闸门:合法依据要放行")
     code, _, _ = run("review_dispatch_guard.py", ["pre"], dispatch("first-reviewer-a", prompt="首审（链中第一环，无上一状态行）。"), gd)
     check("「首审」声明放行", code == 0, f"实际 {code}")
-    code, _, _ = run("review_dispatch_guard.py", ["pre"], dispatch("reviewer", prompt="〔下一跳:K3 全量终审(…;闭案条件=0P0/0P1)〕"), gd)
+    code, _, _ = run("review_dispatch_guard.py", ["pre"], dispatch("reviewer", prompt="〔下一跳:reviewer 做 L2b 全量终审(…;闭案条件=0P0/0P1)〕"), gd)
     check("〔下一跳 状态行放行", code == 0, f"实际 {code}")
 
     print("\n[9] 闸门:任务书路径式依据")
@@ -124,13 +124,13 @@ def main():
         return p
 
     cases = [
-        ("taskbook-good.md", "〔下一跳:修复审(主会话修复后派 first-reviewer-a;之后→K3 全量终审;A 通道)〕", 0, "裸状态行"),
+        ("taskbook-good.md", "〔下一跳:修复审(主会话修复后派 first-reviewer-a;之后→reviewer 做 L2b 全量终审;A 通道)〕", 0, "裸状态行"),
         ("taskbook-quoted.md", "`〔下一跳:修复审(…;闭案条件=0P0/0P1)〕`", 0, "反引号包裹"),
-        ("taskbook-statusfirst.md", "〔状态:已改待验〕〔下一跳:K3 收口终验(…;闭案条件=0P0/0P1)〕", 0, "状态行在前"),
+        ("taskbook-statusfirst.md", "〔状态:已改待验〕〔下一跳:reviewer 做 L2b 收口终验(…;闭案条件=0P0/0P1)〕", 0, "状态行在前"),
         ("taskbook-firstreview.md", "首审（链中第一环，无上一状态行）。", 0, "首审声明"),
         ("taskbook-template.md", "这里写一个检查清单：〔下一跳…〕", 2, "模板占位/清单句"),
         ("taskbook-mention.md", "状态行格式是〔下一跳:X(之后→Y;闭案条件=Z)〕", 2, "仅提及格式"),
-        ("taskbook-label.md", "K3：〔下一跳:glm delta 复核(…;闭案条件=0P0)〕", 0, "角色标签前缀(K3：)"),
+        ("taskbook-label.md", "reviewer：〔下一跳:glm delta 复核(…;闭案条件=0P0)〕", 0, "角色标签前缀(reviewer：)"),
     ]
     for fname, decl, expect, label in cases:
         path = write_tb(fname, decl)
